@@ -160,67 +160,15 @@ namespace TextureMapSystem
 			return BlendBitmaps(new List<Bitmap> { bmp1, bmp2 }, (a) => process(a[0], a[1]));
 		}
 
-		//public static Bitmap BlendBitmaps(Bitmap bmp1, Bitmap bmp2, Func<RGBAColor, RGBAColor, RGBAColor> process)
-		//{
-		//	var size = new Size(Math.Min(bmp1.Size.Width, bmp2.Size.Width), Math.Min(bmp1.Size.Height, bmp2.Size.Height));
-		//	var rect = new Rectangle(0, 0, size.Width, size.Height);
+		public static Bitmap BlendBitmaps(Bitmap bmp1, Bitmap bmp2, Bitmap bmp3, Func<RGBAColor, RGBAColor, RGBAColor, RGBAColor> process)
+		{
+			return BlendBitmaps(new List<Bitmap> { bmp1, bmp2, bmp3 }, (a) => process(a[0], a[1], a[2]));
+		}
 
-		//	var finalBmp = new Bitmap(size.Width, size.Height);
-
-		//	var bitmapData1 = bmp1.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-		//	var bitmapData2 = bmp2.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-		//	var final = finalBmp.LockBits(rect, ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-
-		//	var dataLength = finalBmp.Width * finalBmp.Height * 4;
-
-		//	var bytes1 = new byte[dataLength];
-		//	var bytes2 = new byte[dataLength];
-		//	var bytes3 = new byte[dataLength];
-
-		//	Marshal.Copy(bitmapData1.Scan0, bytes1, 0, dataLength);
-		//	Marshal.Copy(bitmapData2.Scan0, bytes2, 0, dataLength);
-		//	Marshal.Copy(final.Scan0, bytes3, 0, dataLength);
-
-		//	var index = 0;
-		//	var clr1 = new RGBAColor();
-		//	var clr2 = new RGBAColor();
-
-		//	for (var y = 0; y < finalBmp.Height; y++)
-		//	{
-		//		for (var x = 0; x < finalBmp.Width; x++)
-		//		{
-		//			index = y * final.Stride + x * 4;
-
-		//			clr1.R = bytes1[index + 2];
-		//			clr1.G = bytes1[index + 1];
-		//			clr1.B = bytes1[index + 0];
-		//			clr1.A = bytes1[index + 3];
-
-		//			clr2.R = bytes2[index + 2];
-		//			clr2.G = bytes2[index + 1];
-		//			clr2.B = bytes2[index + 0];
-		//			clr2.A = bytes2[index + 3];
-
-		//			var res = process(clr1, clr2);
-
-		//			bytes3[index + 2] = res.R;
-		//			bytes3[index + 1] = res.G;
-		//			bytes3[index + 0] = res.B;
-		//			bytes3[index + 3] = res.A;
-		//		}
-		//	}
-
-		//	Marshal.Copy(bytes1, 0, bitmapData1.Scan0, bytes1.Length);
-		//	bmp1.UnlockBits(bitmapData1);
-
-		//	Marshal.Copy(bytes2, 0, bitmapData2.Scan0, bytes2.Length);
-		//	bmp2.UnlockBits(bitmapData2);
-
-		//	Marshal.Copy(bytes3, 0, final.Scan0, bytes3.Length);
-		//	finalBmp.UnlockBits(final);
-
-		//	return finalBmp;
-		//}
+		public static Bitmap BlendBitmaps(Bitmap bmp1, Bitmap bmp2, Bitmap bmp3, Bitmap bmp4, Func<RGBAColor, RGBAColor, RGBAColor, RGBAColor, RGBAColor> process)
+		{
+			return BlendBitmaps(new List<Bitmap> { bmp1, bmp2, bmp3, bmp4 }, (a) => process(a[0], a[1], a[2], a[3]));
+		}
 
 		public static Bitmap BlendBitmaps(List<Bitmap> bmps, Func<List<RGBAColor>, RGBAColor> process)
 		{
@@ -246,9 +194,9 @@ namespace TextureMapSystem
 				Marshal.Copy(bitmapData[i].Scan0, bytesList[i], 0, dataLength);
 			}
 			bytesList.Add(new byte[dataLength]);
-			
+
 			Marshal.Copy(final.Scan0, bytesList.Last(), 0, dataLength);
-			
+
 			var clrList = new List<RGBAColor>();
 			for (var i = 0; i < bmps.Count; i++)
 			{
@@ -270,7 +218,7 @@ namespace TextureMapSystem
 					}
 
 					var res = process(clrList);
-					
+
 					bytesList.Last()[index + 2] = res.R;
 					bytesList.Last()[index + 1] = res.G;
 					bytesList.Last()[index + 0] = res.B;
@@ -285,7 +233,7 @@ namespace TextureMapSystem
 			}
 			Marshal.Copy(bytesList.Last(), 0, final.Scan0, bytesList.Last().Length);
 			finalBmp.UnlockBits(final);
-			
+
 			return finalBmp;
 		}
 
@@ -300,138 +248,139 @@ namespace TextureMapSystem
 
 		#endregion
 
-		public class RGBAColor
+	}
+
+	public class RGBAColor
+	{
+		public byte R { get; set; }
+
+		public byte G { get; set; }
+
+		public byte B { get; set; }
+
+		public byte A { get; set; }
+
+		public RGBAColor() { }
+
+		public RGBAColor(byte r, byte g, byte b, byte a = 1)
 		{
-			public byte R { get; set; }
-
-			public byte G { get; set; }
-
-			public byte B { get; set; }
-
-			public byte A { get; set; }
-
-			public RGBAColor() { }
-
-			public RGBAColor(byte r, byte g, byte b, byte a = 1)
-			{
-				R = r;
-				G = g;
-				B = b;
-				A = a;
-			}
-
-			public RGBAColorNormalised GetNormalised()
-			{
-				return new RGBAColorNormalised(ByteToFloat(R), ByteToFloat(G), ByteToFloat(B), ByteToFloat(A));
-			}
-
-			private float ByteToFloat(float value)
-			{
-				return (float)((float)value / (float)byte.MaxValue);
-			}
-
-			public static RGBAColor operator +(RGBAColor c1, RGBAColor c2)
-			{
-				return new RGBAColor
-				{
-					R = AddBytes(c1.R, c2.R),
-					G = AddBytes(c1.G, c2.G),
-					B = AddBytes(c1.B, c2.B),
-					A = AddBytes(c1.A, c2.A)
-				};
-			}
-
-			public static RGBAColor operator -(RGBAColor c1, RGBAColor c2)
-			{
-				return new RGBAColor
-				{
-					R = SubtractBytes(c1.R, c2.R),
-					G = SubtractBytes(c1.G, c2.G),
-					B = SubtractBytes(c1.B, c2.B),
-					A = SubtractBytes(c1.A, c2.A)
-				};
-			}
-
-			public static RGBAColor operator *(RGBAColor c1, RGBAColor c2)
-			{
-				var n1 = c1.GetNormalised();
-				var n2 = c2.GetNormalised();
-				return new RGBAColorNormalised
-				{
-					R = n1.R * n2.R,
-					G = n1.G * n2.G,
-					B = n1.B * n2.B,
-					A = n1.A * n2.A
-				}.GetUnormalised();
-			}
-
-			private static byte AddBytes(byte b1, byte b2)
-			{
-				return (byte)Math.Min(b1 + b2, (int)byte.MaxValue);
-			}
-
-			private static byte SubtractBytes(byte b1, byte b2)
-			{
-				return (byte)Math.Max(b1 - b2, 0);
-			}
+			R = r;
+			G = g;
+			B = b;
+			A = a;
 		}
 
-		public class RGBAColorNormalised
+		public RGBAColorNormalised GetNormalised()
 		{
-			public float R { get; set; }
+			return new RGBAColorNormalised(ByteToFloat(R), ByteToFloat(G), ByteToFloat(B), ByteToFloat(A));
+		}
 
-			public float G { get; set; }
+		private float ByteToFloat(float value)
+		{
+			return (float)((float)value / (float)byte.MaxValue);
+		}
 
-			public float B { get; set; }
-
-			public float A { get; set; }
-
-			public RGBAColorNormalised() { }
-
-			public RGBAColorNormalised(float r, float g, float b, float a = 1f)
+		public static RGBAColor operator +(RGBAColor c1, RGBAColor c2)
+		{
+			return new RGBAColor
 			{
-				R = r;
-				G = g;
-				B = b;
-				A = a;
-			}
+				R = AddBytes(c1.R, c2.R),
+				G = AddBytes(c1.G, c2.G),
+				B = AddBytes(c1.B, c2.B),
+				A = AddBytes(c1.A, c2.A)
+			};
+		}
 
-			public RGBAColor GetUnormalised(bool clamp = true)
+		public static RGBAColor operator -(RGBAColor c1, RGBAColor c2)
+		{
+			return new RGBAColor
 			{
-				var r = this;
-				if (clamp)
-				{
-					r = Clamp(this);
-				}
-				return new RGBAColor(FloatToByte(r.R), FloatToByte(r.G), FloatToByte(r.B), FloatToByte(r.A));
-			}
+				R = SubtractBytes(c1.R, c2.R),
+				G = SubtractBytes(c1.G, c2.G),
+				B = SubtractBytes(c1.B, c2.B),
+				A = SubtractBytes(c1.A, c2.A)
+			};
+		}
 
-			public static RGBAColorNormalised Clamp(RGBAColorNormalised clr)
+		public static RGBAColor operator *(RGBAColor c1, RGBAColor c2)
+		{
+			var n1 = c1.GetNormalised();
+			var n2 = c2.GetNormalised();
+			return new RGBAColorNormalised
 			{
-				return new RGBAColorNormalised
-				{
-					R = MathUtility.Clamp(clr.R, 0, 1),
-					G = MathUtility.Clamp(clr.G, 0, 1),
-					B = MathUtility.Clamp(clr.B, 0, 1),
-					A = MathUtility.Clamp(clr.A, 0, 1)
-				};
-			}
+				R = n1.R * n2.R,
+				G = n1.G * n2.G,
+				B = n1.B * n2.B,
+				A = n1.A * n2.A
+			}.GetUnormalised();
+		}
 
-			public static RGBAColorNormalised ProcessAllChannels(RGBAColorNormalised v1, RGBAColorNormalised v2, Func<float, float, float> process, bool excludeAlpha = false)
-			{
-				return new RGBAColorNormalised
-				{
-					R = process(v1.R, v2.R),
-					G = process(v1.G, v2.G),
-					B = process(v1.B, v2.B),
-					A = excludeAlpha ? v1.A : process(v1.A, v2.A)
-				};
-			}
+		private static byte AddBytes(byte b1, byte b2)
+		{
+			return (byte)Math.Min(b1 + b2, (int)byte.MaxValue);
+		}
 
-			private byte FloatToByte(float value)
+		private static byte SubtractBytes(byte b1, byte b2)
+		{
+			return (byte)Math.Max(b1 - b2, 0);
+		}
+	}
+
+	public class RGBAColorNormalised
+	{
+		public float R { get; set; }
+
+		public float G { get; set; }
+
+		public float B { get; set; }
+
+		public float A { get; set; }
+
+		public RGBAColorNormalised() { }
+
+		public RGBAColorNormalised(float r, float g, float b, float a = 1f)
+		{
+			R = r;
+			G = g;
+			B = b;
+			A = a;
+		}
+
+		public RGBAColor GetUnormalised(bool clamp = true)
+		{
+			var r = this;
+			if (clamp)
 			{
-				return (byte)(value * (float)byte.MaxValue);
+				r = Clamp(this);
 			}
+			return new RGBAColor(FloatToByte(r.R), FloatToByte(r.G), FloatToByte(r.B), FloatToByte(r.A));
+		}
+
+		public static RGBAColorNormalised Clamp(RGBAColorNormalised clr)
+		{
+			return new RGBAColorNormalised
+			{
+				R = MathUtility.Clamp(clr.R, 0, 1),
+				G = MathUtility.Clamp(clr.G, 0, 1),
+				B = MathUtility.Clamp(clr.B, 0, 1),
+				A = MathUtility.Clamp(clr.A, 0, 1)
+			};
+		}
+
+		public static RGBAColorNormalised ProcessAllChannels(RGBAColorNormalised v1, RGBAColorNormalised v2, Func<float, float, float> process, bool excludeAlpha = false)
+		{
+			return new RGBAColorNormalised
+			{
+				R = process(v1.R, v2.R),
+				G = process(v1.G, v2.G),
+				B = process(v1.B, v2.B),
+				A = excludeAlpha ? v1.A : process(v1.A, v2.A)
+			};
+		}
+
+		private byte FloatToByte(float value)
+		{
+			return (byte)(value * (float)byte.MaxValue);
 		}
 	}
 
